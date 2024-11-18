@@ -4,23 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menu = document.getElementById('menu');
   const playerNameInput = document.getElementById('playerName');
   const startGameButton = document.getElementById('startGame');
-
-
-  const socket = io();
-
-  socket.on('userConnected', (data) => {
-  const message = document.createElement('p');
-  message.textContent = `Un joueur s'est connecté : ${data.id}`;
-  document.body.appendChild(message);
-  });
-
-  socket.on('userDisconnected', (data) => {
-  const message = document.createElement('p');
-  message.textContent = `Un joueur s'est déconnecté : ${data.id}`;
-  document.body.appendChild(message);
-  });
-
-
+  
   const mapWidth = 5000; ///largeur
   const mapHeight = 5000;///hauteur
 
@@ -86,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         player.points++;
         player.radius++;
         food.splice(i, 1);
-        i--;
+        i--; // Je n'arrive pas à regénérer une nourriture une fois manger. 
       }
     }
   }
