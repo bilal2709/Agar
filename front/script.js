@@ -11,9 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const backgroundImage = new Image();
   backgroundImage.src = 'background2.jpeg';
 
+  //Utilisation de l'IA pour intégrer la musique 
   const backgroundMusic = new Audio('audio/background-music.mp3'); // Mettez le chemin correct vers votre fichier audio
   backgroundMusic.loop = true; // Pour que la musique se répète en boucle
-  backgroundMusic.volume = 0.5; // Réglez le volume (entre 0.0 et 1.0)
+  backgroundMusic.volume = 0.5; // Réglez le volume (entre 0.0 et 1.0) 
 
   backgroundMusic.addEventListener('error', (e) => {
     console.error('Erreur lors du chargement de la musique de fond :', e);
