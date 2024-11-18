@@ -5,8 +5,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerNameInput = document.getElementById('playerName');
   const startGameButton = document.getElementById('startGame');
 
+
+  const socket = io();
+
+  socket.on('userConnected', (data) => {
+  const message = document.createElement('p');
+  message.textContent = `Un joueur s'est connecté : ${data.id}`;
+  document.body.appendChild(message);
+  });
+
+  socket.on('userDisconnected', (data) => {
+  const message = document.createElement('p');
+  message.textContent = `Un joueur s'est déconnecté : ${data.id}`;
+  document.body.appendChild(message);
+  });
+
+
   const mapWidth = 5000; ///largeur
-  const mapHeight = 5000;///hauteurr
+  const mapHeight = 5000;///hauteur
 
   const backgroundImage = new Image();
   backgroundImage.src = 'background2.jpeg';
@@ -140,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawGame();
     requestAnimationFrame(gameLoop);
   }
-
+  
   startGameButton.addEventListener('click', () => {
     const name = playerNameInput.value.trim();
     if (!name) {

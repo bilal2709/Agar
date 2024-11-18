@@ -11,15 +11,14 @@ const io = new Server(server);
 
 io.on('connection', (socket) => {
   console.log('Un joueur est connecté :', socket.id);
-
-
-  socket.on('message', (data) => {
-  });
+  socket.broadcast.emit('userConnected', { id: socket.id });
 
   socket.on('disconnect', () => {
     console.log('Joueur déconnecté :', socket.id);
+    socket.broadcast.emit('userDisconnected', { id: socket.id });
   });
 });
+
 
 app.use(express.static(path.join(__dirname, 'front')));
 
