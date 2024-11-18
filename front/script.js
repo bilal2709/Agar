@@ -1,72 +1,148 @@
-// Récupérer le canvas et le contexte de dessin
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const menu = document.getElementById('menu');
+  const playerNameInput = document.getElementById('playerName');
+  const startGameButton = document.getElementById('startGame');
 
-// Ajuster la taille du canvas à la taille de la fenêtre
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  const mapWidth = 5000; ///largeur
+  const mapHeight = 5000;///hauteurr
 
-// Charger l'image de fond
-const backgroundImage = new Image();
-backgroundImage.src = 'background2.jpeg'; // Chemin de l'image
+  const backgroundImage = new Image();
+  backgroundImage.src = 'background2.jpeg';
 
-// Informations du joueur
-let player = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  radius: 20,
-  color: 'blue',
-  speed: 5,
-};
+  let player = {
+    x: mapWidth / 2,
+    y: mapHeight / 2,
+    radius: 20,
+    color: 'blue',
+    speed: 5,
+    points: 0,
+    name: '',
+  };
 
-// Gestion des touches
-let keys = {};
+  let food = [];
+  let keys = {};
 
-// Écouteurs d'événements pour les touches
-window.addEventListener('keydown', (e) => {
-  keys[e.key] = true;
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  window.addEventListener('keydown', (e) => {
+    keys[e.key] = true;
+  });
+
+  window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+  });
+
+  function generateFood(amount = 200) {
+    for (let i = 0; i < amount; i++) {
+      food.push({
+        x: Math.random() * mapWidth,
+        y: Math.random() * mapHeight,
+        radius: 5,
+        color: 'green',
+      });
+    }
+  }
+
+  function eatFood() {
+    for (let i = 0; i < food.length; i++) {
+      const dx = player.x - food[i].x;
+      const dy = player.y - food[i].y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < player.radius + food[i].radius) {
+        player.points++;
+        player.radius++;
+        food.splice(i, 1);
+        i--;
+      }
+    }
+  }
+
+  function updatePlayer() {
+    if (keys['ArrowUp']) player.y -= player.speed;
+    if (keys['ArrowDown']) player.y += player.speed;
+    if (keys['ArrowLeft']) player.x -= player.speed;
+    if (keys['ArrowRight']) player.x += player.speed;
+
+    if (player.x - player.radius < 0) player.x = player.radius;
+    if (player.x + player.radius > mapWidth) player.x = mapWidth - player.radius;
+    if (player.y - player.radius < 0) player.y = player.radius;
+    if (player.y + player.radius > mapHeight) player.y = mapHeight - player.radius;
+
+    eatFood();
+  }
+
+  function drawGame() {
+    const offsetX = Math.min(
+      Math.max(player.x - canvas.width / 2, 0),
+      mapWidth - canvas.width
+    );
+    const offsetY = Math.min(
+      Math.max(player.y - canvas.height / 2, 0),
+      mapHeight - canvas.height
+    );
+
+    if (backgroundImage.complete) {
+      ctx.drawImage(backgroundImage, -offsetX, -offsetY, mapWidth, mapHeight);
+    }
+
+    for (let i = 0; i < food.length; i++) {
+      const f = food[i];
+      ctx.beginPath();
+      ctx.arc(f.x - offsetX, f.y - offsetY, f.radius, 0, Math.PI * 2);
+      ctx.fillStyle = f.color;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    ctx.beginPath();
+    ctx.arc(
+      player.x - offsetX,
+      player.y - offsetY,
+      player.radius,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = player.color;
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText(player.name, player.x - offsetX, player.y - player.radius - offsetY - 15);
+
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'white';
+    ctx.fillText(`Points: ${player.points}`, 600, 30);
+  }
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    updatePlayer();
+    drawGame();
+    requestAnimationFrame(gameLoop);
+  }
+
+  startGameButton.addEventListener('click', () => {
+    const name = playerNameInput.value.trim();
+    if (!name) {
+      alert('Veuillez entrer votre prénom');
+      return;
+    }
+    player.name = name;
+    menu.style.display = 'none';
+    canvas.style.display = 'block';
+
+    generateFood(500);
+    gameLoop();
+  });
 });
-
-window.addEventListener('keyup', (e) => {
-  keys[e.key] = false;
-});
-
-// Mettre à jour la position du joueur
-function updatePlayer() {
-  if (keys['ArrowUp']) player.y -= player.speed;
-  if (keys['ArrowDown']) player.y += player.speed;
-  if (keys['ArrowLeft']) player.x -= player.speed;
-  if (keys['ArrowRight']) player.x += player.speed;
-
-  // Empêcher le joueur de sortir du canvas
-  if (player.x - player.radius < 0) player.x = player.radius;
-  if (player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
-  if (player.y - player.radius < 0) player.y = player.radius;
-  if (player.y + player.radius > canvas.height) player.y = canvas.height - player.radius;
-}
-
-// Dessiner le joueur
-function drawPlayer() {
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = player.color;
-  ctx.fill();
-  ctx.closePath();
-}
-
-// Boucle de jeu principale
-function gameLoop() {
-  // Dessiner l'image de fond
-  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-
-  // Mettre à jour et dessiner le joueur
-  updatePlayer();
-  drawPlayer();
-
-  requestAnimationFrame(gameLoop); // Continuer la boucle
-}
-
-// Démarrer la boucle de jeu
-backgroundImage.onload = () => {
-  gameLoop();
-};
